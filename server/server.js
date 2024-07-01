@@ -1,8 +1,7 @@
 const express = require('express');
 const axios = require('axios');
-const path = require('path');
-const { splitString } = require('./split');
 require('dotenv').config();
+const { removeChars } = require('./removeChars')
 
 const app = express();
 
@@ -14,28 +13,49 @@ app.get("/api", (request, response) => {
 });
 
 app.get("/api/openai", async (request, response) => {
-    const prompt = "PracticingMedicationCalculation,ProvideQuestionsUsingCommonMedications&DoesageExamplesIncludeBetaBlockersNsaidOpioidsIvMedicationsAntiBioticsIncludeWeightBasedCalculations "
+    const prompt = `A nursing student is practicing medication calculations, 
+    generate 5 questions with answers for them to practice. 
+    The questions may include common IV infusions and medications including antibiotics,as well as common oral medications, may also use a weight (kg not lbs) based formular. 
+    Please return the questions and answers in the following format, there is no need to show the working out in the answer:
+    {
+      "questions": [
+        "Text...",
+        "Text...",
+        "Text...",
+        "Text...",
+        "Text..."
+      ],
+      "answers": [
+        "Text...",
+        "Text...",
+        "Text...",
+        "Text...",
+        "Text..."
+      ]
+    }`
     const dataPayload = {
     "model": "gpt-3.5-turbo",
     "messages": [{"role": "user", "content": `${prompt}`}],
     "temperature": 0.7,
-    "n": 2
+    "n": 1
   };
 
     const openaiResponse = await axios.post('https://api.openai.com/v1/chat/completions', dataPayload, 
     { headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}`}} )
     
-    // console.log(openaiResponse.data)
     const { choices } = openaiResponse.data;
-    choices.forEach((c, index) => {
-      console.log(  c.message.content )
-    })
-    // console.log(choices)
-    response.json(openaiResponse.data)
+    
+    // console.log('this is choices', typeof(choices[0].message.content), choices[0].message.content)
+  
+    // const data = JSON.parse( choices[0].message.content)
+    
+    const cleanedData = JSON.parse(removeChars(choices[0].message.content))
+
+
+    console.log('this CD', cleanedData);
+
+    response.json(cleanedData);
    
-
-    // =  splitString(openaiResponse.data.choices.message[0].toString())
-
 });
 
 const PORT = process.env.PORT || 5000

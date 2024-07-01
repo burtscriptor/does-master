@@ -1,0 +1,52 @@
+/* Reset padding, margin, and box-sizing for all elements */
+/* 
+* {
+    padding: 0;
+    margin: 0;
+    box-sizing: border-box;
+} 
+*/
+
+.parent {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    
+    width: 100vw;
+    height: 80vh;
+    border: 1px solid black;
+    background-color: red;
+}
+
+
+.question {
+    display:grid;
+    color: white;
+    width: 40vw;
+    gap: 1.5rem;
+}
+
+.question-text, .answer-result {
+    grid-area: 1/1;
+    /* display: flex;
+    justify-content: center;
+    align-items: center; */
+}
+
+.answer-result {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: aqua;
+    color: black;
+    opacity: 0.5;
+}
+
+.question-text {
+     /* display: flex;
+    justify-content: center;
+    align-items: center; */
+
+}
