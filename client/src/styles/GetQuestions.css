@@ -1,52 +1,223 @@
-/* Reset padding, margin, and box-sizing for all elements */
-/* 
+/* disable check answer button if no answer in field */
+
+
 * {
-    padding: 0;
-    margin: 0;
-    box-sizing: border-box;
-} 
-*/
+    font-family: 'Arial', sans-serif;
+    color:white;
+  }
 
 .parent {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    
+    display: grid;
+    grid-template-columns: 0.75fr auto 0.75fr;
     width: 100vw;
     height: 80vh;
-    border: 1px solid black;
-    background-color: red;
+    border: 1px solid white;
+    overflow: hidden;
+   
 }
 
-
-.question {
-    display:grid;
-    color: white;
-    width: 40vw;
-    gap: 1.5rem;
-}
-
-.question-text, .answer-result {
-    grid-area: 1/1;
-    /* display: flex;
+.dashboard-parent {
+    grid-row-start: 1;
+    border: 1px solid pink;
+    display: flex;
     justify-content: center;
-    align-items: center; */
 }
 
-.answer-result {
-    width: 100%;
-    height: 100%;
+.dashboard-child {
+    margin-top: 20px;
+    gap:5px;
+    display:flex;
+    flex-direction: column;
+    justify-content: first baseline;
+    align-items: center;
+}
+
+.dashboard-child img {
+    height: 40px;
+    width: 40px;
+}
+.question {
+    grid-column: 2;
+    display:grid;
+    grid-template-rows: auto 50px 100px  ;
+    color: white;
+    width: 60vw;
+    gap: 1.5rem;
+    background-color: rgba(0, 0, 0, 0.8);
+}
+
+
+.answer-result-correct {
     display: flex;
     justify-content: center;
     align-items: center;
-    background-color: aqua;
-    color: black;
-    opacity: 0.5;
-}
+    flex-direction: column;
+    height: 40vh;
+    width: 40vw;
+    position: fixed; /* or absolute if you prefer */
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 9999; /* ensures it sits on top of other elements */
+    background-color: green; /* optional: semi-transparent background */
+    padding: 20px; /* optional: padding for content inside the div */
+    border-radius: 8px; /* optional: rounded corners */
+  }
+
+  .answer-result-wrong {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 40vh;
+    width: 40vw;
+    position: fixed; /* or absolute if you prefer */
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 9999; /* ensures it sits on top of other elements */
+    background-color: red; /* optional: semi-transparent background */
+    padding: 20px; /* optional: padding for content inside the div */
+    border-radius: 8px; /* optional: rounded corners */
+  }
 
 .question-text {
-     /* display: flex;
-    justify-content: center;
-    align-items: center; */
-
+    grid-row-start: 1;
+    grid-row-end:2;
+    margin-top: 2rem;
+    z-index: 1;
+    text-align: center;
+    font-size: 18px;
+  font-weight: 500;
+  margin: 20px 0;
+  
 }
+
+.question-number {
+    margin: 0;
+    display:flex;
+    grid-row-start:1;
+    grid-row-end:2;
+    font-size: 16px;
+}
+
+.question-number p {
+    margin: 0;
+    width: 100%;
+    word-wrap: break-word;
+}
+
+.question-question {
+    padding:0;
+    border:0;
+    height: 141px;
+    display:flex;
+    text-align: left;
+    justify-content: left;
+    align-items: left;
+    grid-row-start: 2;
+    grid-row-end:3;
+    /* border: 1px solid orange; */
+}
+
+.question-hint {
+    display:flex;
+    justify-content: center;
+    align-items: center;
+    grid-row-start: 2;
+    grid-row-end:3;
+   
+}
+
+.question-input {
+    /* border: 1px solid rgb(0, 255, 149); */
+    grid-row-start: 3;
+    grid-row-end: 4;
+    margin: 0;
+    width: 100%;
+    display:flex;
+    flex-direction: column;
+   
+}
+
+.question-input-2 {
+    grid-row-start:4;
+    grid-row-end:6;
+    display:flex;
+    width: 100%;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+
+.question-input p {
+    margin: 0;
+}
+
+
+.answer-result-hide {
+    visibility: hidden;
+}
+
+.answer-result-correct img, .answer-result-wrong img {
+    height: 100px;
+    width: 100px;
+}
+
+.child {
+    display: flex;
+    /* border: 2px solid black; */
+}
+
+.child button {
+    height:42.5px;
+}
+
+    /* button.css */
+button {
+    display: inline-block;
+    width: 100%;
+    padding: 12px 24px;
+    /* margin: 10px 0; */
+    font-size: 16px;
+    font-weight: 600;
+    text-align: center;
+    color: #ffffff;
+    background-color: #007bff;
+    border: 0.5px solid black;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.3s, transform 0.3s;
+  }
+  
+  button:hover {
+    background-color: #0056b3;
+    transform: translateY(-2px);
+  }
+  
+  button:active {
+    background-color: #004080;
+    transform: translateY(0);
+  }
+
+  /* input.css */
+input {
+    padding: 12px 0px;
+    width: 100%;
+    height: 50%;
+    margin: 10px 0;
+    font-size: 16px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    transition: border-color 0.3s, box-shadow 0.3s;
+    box-shadow: none;
+    color:black;
+  }
+
+
+input:focus {
+    border-color: #007bff;
+    box-shadow: 0 0 8px rgba(0, 123, 255, 0.2);
+    outline: none;
+  }

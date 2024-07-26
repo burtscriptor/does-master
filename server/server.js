@@ -15,7 +15,7 @@ app.get("/api/openai", async (request, response) => {
     const prompt = `A nursing student is practicing medication calculations, 
     generate 5 questions with answers for them to practice. 
     The questions may include common IV infusions and medications including antibiotics, as well as common oral medications, may also use a weight (kg not lbs) based formula. 
-    Please return the questions and answers in the following format, there is no need to show the working out in the answer:
+    Please return the questions, answers (only the dosage and units of measurement), and formula to work out the answer for example (500 mg * 5 mL) / 250 mg = 10 mL, in the following format:
     {
       "questions": [
         "Text...",
@@ -30,7 +30,14 @@ app.get("/api/openai", async (request, response) => {
         "Text...",
         "Text...",
         "Text..."
-      ]
+      ],
+      "working": [
+        "Text...",
+        "Text...",
+        "Text...",
+        "Text...",
+        "Text..."
+      ],
     }`;
 
     const dataPayload = {
@@ -48,6 +55,8 @@ app.get("/api/openai", async (request, response) => {
         const { choices } = openaiResponse.data;
         const cleanedData = JSON.parse(removeChars(choices[0].message.content));
         response.json(cleanedData);
+        console.log('dirty', choices[0].message.content)
+        console.log(cleanedData)
     } catch (error) {
         console.error('Error fetching data from OpenAI:', error);
         response.status(500).json({ error: 'Failed to fetch data from OpenAI' });
@@ -58,3 +67,6 @@ const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
     console.log(`Listening on ${PORT}`);
 });
+
+
+// implemented working out in request and response

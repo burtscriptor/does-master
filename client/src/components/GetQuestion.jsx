@@ -1,131 +1,149 @@
-import React, { useState, useEffect } from 'react';
-import axios from 'axios'
-import '../styles/GetQuestions.css'
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import axios from 'axios';
+import '../styles/GetQuestions.css';
+import wrong from '../assets/vomit.png'; 
+import wellDone from '../assets/better-health.png';
+import health from '../assets/healthcare.png'
 
 const GetQuestion = () => {
-  const [content, setContent] = useState({ questions: [], answers: [], correct: [] });
-  // const [currentQAndA, setCurrentQAndA] = useState(null);
-  const [showAnswer, setShowAnswer] = useState(false);
-  const [submittedAnswer, setSubmittedAnswer] = useState("")
-  const [result, setResult] = useState(0)
-  const [index, setIndex] = useState(0)
-  const [showHint, setShowHint] = useState(false)
+  const [content, setContent] = useState({ questions: [], answers: [], working: [] });
+  const [submittedAnswer, setSubmittedAnswer] = useState("");
+  const [showHintButton, setShowHintButton] = useState(false);
+  const [showHint, setShowHint] = useState({ show: false, hint: "" });
+  const [result, setResult] = useState(0);
+  const [index, setIndex] = useState(0);
+  const [counters, setCounters] = useState({ attempted: 0, skipped: 0, correct: [] });
 
+  const handleRequest = useCallback(async () => {
+    const response = await axios.get("/api/openai");
+    setContent(prev => ({
+      questions: [...prev.questions, ...response.data.questions],
+      answers: [...prev.answers, ...response.data.answers],
+      working: [...prev.working, ...response.data.working],
+    }));
+  }, []);
 
-  // to do
-  // adjust handlenext to fetch more question if has run out - (done),
-  // cleared input - (done)
-  // add a previous button, 
-  // tighten up the correct/ so that when correct the next qustion is loaded automatically - (done)
-  // store the index or correct questions in a content.correct: [] - (done)
-  // add a hint button - find the lastindex of digits and return slice from that position - (done)
- 
-  const handleRequest = async () => {
-    const response = await axios.get("/api/openai")
-    setContent((prevC) => ({ questions: [...prevC.questions,...response.data.questions], 
-      answers: [...prevC.answers,...response.data.answers],
-    correct: [...prevC.correct] }) );
-    
-  };
-
-useEffect(()=> {
-  handleRequest();
-}, []);
-
-
-
-const lastIndexOf = (str, regex) => {
-  const matches = [...str.matchAll(regex)];
-  if (matches.length === 0) return -1;
-  return matches[matches.length - 1].index;
-}
-
-
-let hintdisplay;
-if (showHint) {
-  const str = content.answers[`${index}`];
-  const regex = /[0-9]/g;
-  const lastIndex = lastIndexOf(str, regex);
-  hintdisplay = content.answers[`${index}`].slice(lastIndex+1);
-};
-
-
-let currentIndex;
-if (content.questions.length > 0 ) {
- currentIndex = content.questions.findIndex((q, idx) => q === content.questions[`${index}`] ) + 1;
-};
-
-const handleAnswer =() => {
-  if(submittedAnswer.length > 0) {
-  if(content.answers[`${index}`].toLowerCase().replaceAll(" ", "").includes(submittedAnswer.toLowerCase().replaceAll(" ", ""))) {
-    console.log('true')
-    setResult(1); // so it knows what msg to display
-    setSubmittedAnswer(""); // clear the input
-    setContent((prevC) => ({ questions: [...prevC.questions], answers: [...prevC.answers], correct: [...prevC.correct, index ] }))
-    
-    
-    setInterval(() => {
-      setResult(0)
-          }, 3000)
-      handleNext(); //automactiaclly bring up the next question
-  }else{
-    console.log('false')
-    setResult(2)
-    setInterval(() => {
-      setResult(0)
-          }, 2000)
-  };
-};
-};
-
-const handleNext = () => {
-  if(index === content.questions.length -2){
-   
+  useEffect(() => {
     handleRequest();
-  
-  }else{
-    setIndex((prevIndex) => prevIndex += 1)
-  }
+  }, [handleRequest]);
 
-}
+  const currentIndex = useMemo(() => {
+    if (content.questions.length > 0) {
+      return content.questions.findIndex((q, idx) => q === content.questions[index]) + 1;
+    }
+    return 0;
+  }, [content.questions, index]);
 
-return (
-  <div className="parent">
-    <div className="dashboard-parent">
-      <p>Total Number of questions: </p>
-      <p>Correct: {content.correct.length}</p>
+  useEffect(() => {
+    if (result !== 0) {
+      const timer = setTimeout(() => {
+        setResult(0);
+      }, 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [result]);
+
+  const normalizeString = str => str.toLowerCase().replace(/[^a-z0-9]/g, "").trim();
+
+  const handleAnswer = useCallback(() => {
+    if (submittedAnswer.length > 0) {
+      const normalizedSubmittedAnswer = normalizeString(submittedAnswer);
+      const normalizedActualAnswer = normalizeString(content.answers[index]);
+
+      const isCorrect = normalizedActualAnswer === normalizedSubmittedAnswer;
+
+      setCounters(prev => ({ ...prev, attempted: prev.attempted + 1 }));
+      if (isCorrect) {
+        setResult(1);
+        setCounters(prev => ({ ...prev, correct: [...prev.correct, index] }));
+        setShowHint({ show: false, hint: "" });
+        setSubmittedAnswer("");
+        handleNext();
+      } else {
+        setSubmittedAnswer("");
+        setResult(2);
+        if (!showHint.show) {
+          setShowHintButton(true);
+        }
+      }
+    }
+  }, [submittedAnswer, content.answers, index, showHint.show]);
+
+  const handleNext = useCallback(() => {
+    if (index === content.questions.length - 2) {
+      handleRequest();
+    } else {
+      setIndex(prevIndex => prevIndex + 1);
+    }
+  }, [index, content.questions.length, handleRequest]);
+
+  const handleSkip = useCallback(() => {
+    handleNext();
+    setCounters(prev => ({ ...prev, skipped: prev.skipped + 1 }));
+    setShowHintButton(false);
+    setShowHint({ show: false, hint: "" });
+  }, [handleNext]);
+
+  const handleHint = () => {
+    if (content.working && content.working[index]) {
+      const workingContent = content.working[index];
+      const indexHint = workingContent.indexOf('=');
       
-    </div>
-    <div className="question">
-      <div className="question-text">
-        {content.questions.length > 0 ? ( <>
-        <p>Question {currentIndex }  </p>
-        <p>{content.questions[`${index}`]}</p>
-        <input type="text"  value={submittedAnswer}
-        onChange={(event) => setSubmittedAnswer(event.target.value)}>
-        </input>
-        <button type="button" 
-        onClick={handleAnswer}>Submit
-        </button>
-        { !showAnswer ? "" : <p>{content.answers[`${index}`]}</p>}
-        { !showHint ? "" : <p>{hintdisplay} </p>}
-        <button type="button" onClick={() => setShowAnswer(!showAnswer)} >Show Answer</button>
-        <button type="button" onClick={() => setShowHint(!showHint)} >Hint</button>
-       </>
-        )
-      :
-      ("")
-}
+      if (indexHint !== -1 && indexHint > 0) {
+        const newHint = workingContent.slice(0, indexHint).trim();
+        setShowHint({ show: true, hint: newHint });
+        setShowHintButton(false);
+      } else {
+        setShowHint({ show: true, hint: "No hint available" });
+      }
+    } else {
+      setShowHint({ show: true, hint: "No hint available" });
+    }
+  };
+
+  return (
+    <div className="parent">
+      
+      <div className="dashboard-parent">
+        <div className="dashboard-child">
+         <img src={health} />
+          <p>Question: {currentIndex} </p>
+          <p>Attempted: {counters.attempted} </p>
+          <p>Correct: {counters.correct.length}</p>
+          <p>Skipped: {counters.skipped} </p>
+        </div>
       </div>
-       <div style={{ "visibility": result === 0 ? "hidden" : "visible" }} className="answer-result">
-        {result === 1 ? <p>Correct</p> : <p>Try Again</p>}
-      </div> 
-     <button type="button" onClick={handleNext}>Next Question</button>
-      
+      <div className="question">
+        {content.questions.length > 0 ? (
+          <>
+            <div className="question-text">
+              <p>{content.questions[index]}</p>
+            </div>
+            <div className="question-hint">
+              {showHintButton ? <button type="button" onClick={handleHint}>Hint</button> : ""}
+              {showHint.show ? <p>{showHint.hint}</p> : ""}
+            </div>
+            <div className="question-input">
+              <input
+                type="text"
+                value={submittedAnswer}
+                onChange={(event) => setSubmittedAnswer(event.target.value)}
+              />
+            </div>
+            <div className="question-input-2">
+              <button type="button" onClick={handleAnswer}>Check answer</button>
+              <button type="button" onClick={handleSkip}>Skip Question</button>
+            </div>
+          </>
+        ) : (
+          <p>Loading</p>
+        )}
+        <div className={result === 0 ? "answer-result-hide" : result === 1 ? "answer-result-correct" : "answer-result-wrong"}>
+          {result === 1 ? (<><img src={wellDone} alt="Correct" /><h1>Correct</h1></>) : (<><img src={wrong} alt="Wrong" /><p>Not quite right!</p></>)}
+        </div>
+      </div>
     </div>
-    
-  </div>
-);
+  );
 };
 
 export default GetQuestion;
