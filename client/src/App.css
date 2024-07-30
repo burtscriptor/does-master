@@ -1,5 +1,0 @@
-.App {
-  background-image: url('../src/assets/header-background.jpg'); /* Correct way to set the background image */
-  background-size: cover; /* Adjust the image size to cover the whole element */
-  background-position: center; /* Center the background image */
-}

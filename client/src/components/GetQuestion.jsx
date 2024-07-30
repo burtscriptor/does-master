@@ -3,7 +3,8 @@ import axios from 'axios';
 import '../styles/GetQuestions.css';
 import wrong from '../assets/vomit.png'; 
 import wellDone from '../assets/better-health.png';
-import health from '../assets/healthcare.png'
+import health from '../assets/healthcare.png';
+import info from '../assets/info.png';
 
 const GetQuestion = () => {
   const [content, setContent] = useState({ questions: [], answers: [], working: [] });
@@ -49,6 +50,7 @@ const GetQuestion = () => {
     if (submittedAnswer.length > 0) {
       const normalizedSubmittedAnswer = normalizeString(submittedAnswer);
       const normalizedActualAnswer = normalizeString(content.answers[index]);
+      
 
       const isCorrect = normalizedActualAnswer === normalizedSubmittedAnswer;
 
@@ -101,48 +103,72 @@ const GetQuestion = () => {
     }
   };
 
+const handleHelp = () => {
+  console.log(content.answers[index])
+  // set somthing to true so we know to show a div
+  // want to say
+  // Developed to help student nurses practice the mathematics of medication
+  // calculation. DoseMaster uses openAi to generate questions and their answers.
+  // The medications and doseags are meant to reflect practices in the real world,
+  // however as when using any AI technology inaccurries may occur. The information 
+  // presented should in no way be used in actual, medical decision making. 
+}
+
   return (
+    <>
+    <div className="header">
+    <h1>DoseMaster</h1>
+    </div>
     <div className="parent">
+
+      <div className="icon-parent" >
+     
+      </div>
       
       <div className="dashboard-parent">
+        
         <div className="dashboard-child">
-         <img src={health} />
+        <img src={health} />
+        <div className="child-text">
           <p>Question: {currentIndex} </p>
           <p>Attempted: {counters.attempted} </p>
           <p>Correct: {counters.correct.length}</p>
           <p>Skipped: {counters.skipped} </p>
+          </div>
         </div>
       </div>
       <div className="question">
         {content.questions.length > 0 ? (
           <>
-            <div className="question-text">
+            {/* <div className="question-text"> */}
               <p>{content.questions[index]}</p>
-            </div>
-            <div className="question-hint">
+            {/* </div> */}
+            {/* <div className="question-hint"> */}
               {showHintButton ? <button type="button" onClick={handleHint}>Hint</button> : ""}
               {showHint.show ? <p>{showHint.hint}</p> : ""}
-            </div>
-            <div className="question-input">
+            {/* </div> */}
+            {/* <div className="question-input"> */}
               <input
                 type="text"
                 value={submittedAnswer}
                 onChange={(event) => setSubmittedAnswer(event.target.value)}
               />
-            </div>
-            <div className="question-input-2">
+            {/* </div> */}
+            <div className="question-input-2"> 
               <button type="button" onClick={handleAnswer}>Check answer</button>
               <button type="button" onClick={handleSkip}>Skip Question</button>
-            </div>
+            </div> 
           </>
         ) : (
           <p>Loading</p>
         )}
-        <div className={result === 0 ? "answer-result-hide" : result === 1 ? "answer-result-correct" : "answer-result-wrong"}>
+         <div className={result === 0 ? "answer-result-hide" : result === 1 ? "answer-result-correct" : "answer-result-wrong"}>
           {result === 1 ? (<><img src={wellDone} alt="Correct" /><h1>Correct</h1></>) : (<><img src={wrong} alt="Wrong" /><p>Not quite right!</p></>)}
         </div>
       </div>
+     
     </div>
+    </>
   );
 };
 
