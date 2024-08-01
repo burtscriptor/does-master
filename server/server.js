@@ -7,6 +7,9 @@ const app = express();
 
 const apiKey = process.env.REACT_APP_API_KEY;
 
+app.use(express.static(path.join(__dirname + "/public")));
+
+
 app.get("/api", (request, response) => {
     response.json({ 'hello': 'hey whats up?' });
 });
