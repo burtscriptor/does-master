@@ -4,7 +4,7 @@ import '../styles/GetQuestions.css';
 import wrong from '../assets/vomit.png'; 
 import wellDone from '../assets/better-health.png';
 import health from '../assets/healthcare.png';
-import info from '../assets/info.png';
+import info from '../assets/information.png';
 
 const GetQuestion = () => {
   const [content, setContent] = useState({ questions: [], answers: [], working: [] });
@@ -14,14 +14,26 @@ const GetQuestion = () => {
   const [result, setResult] = useState(0);
   const [index, setIndex] = useState(0);
   const [counters, setCounters] = useState({ attempted: 0, skipped: 0, correct: [] });
+  const [showInfo, setShowInfo] = useState(false);
+  const [error, setError] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   const handleRequest = useCallback(async () => {
+    try {
     const response = await axios.get("/api/openai");
     setContent(prev => ({
       questions: [...prev.questions, ...response.data.questions],
       answers: [...prev.answers, ...response.data.answers],
       working: [...prev.working, ...response.data.working],
+    
     }));
+    setError(false);
+  } catch (error) {
+  console.log(error);
+  if(index >= content.questions.length) {
+    setError(true);
+  } 
+  }
   }, []);
 
   useEffect(() => {
@@ -72,10 +84,18 @@ const GetQuestion = () => {
   }, [submittedAnswer, content.answers, index, showHint.show]);
 
   const handleNext = useCallback(() => {
+    if(index === content.questions.length) {
+      console.log('condition 1')
+      console.log(index, content.questions.length)
+    }
     if (index === content.questions.length - 2) {
       handleRequest();
+      console.log('condition 2')
+      console.log(content.questions.length)
     } else {
       setIndex(prevIndex => prevIndex + 1);
+      console.log('condition 3')
+      console.log(content.questions.length)
     }
   }, [index, content.questions.length, handleRequest]);
 
@@ -104,14 +124,9 @@ const GetQuestion = () => {
   };
 
 const handleHelp = () => {
-  console.log(content.answers[index])
-  // set somthing to true so we know to show a div
-  // want to say
-  // Developed to help student nurses practice the mathematics of medication
-  // calculation. DoseMaster uses openAi to generate questions and their answers.
-  // The medications and doseags are meant to reflect practices in the real world,
-  // however as when using any AI technology inaccurries may occur. The information 
-  // presented should in no way be used in actual, medical decision making. 
+  console.log(content.answers[index]);
+  setShowInfo(true);
+  
 }
 
   return (
@@ -130,43 +145,57 @@ const handleHelp = () => {
         <div className="dashboard-child">
         <img src={health} />
         <div className="child-text">
-          <p>Question: {currentIndex} </p>
+          <p>Question: {currentIndex}</p>
           <p>Attempted: {counters.attempted} </p>
           <p>Correct: {counters.correct.length}</p>
           <p>Skipped: {counters.skipped} </p>
           </div>
         </div>
+        <img className="info-icon" src={info} onClick={handleHelp}/>
       </div>
       <div className="question">
         {content.questions.length > 0 ? (
           <>
-            {/* <div className="question-text"> */}
+          
               <p>{content.questions[index]}</p>
-            {/* </div> */}
-            {/* <div className="question-hint"> */}
+           
               {showHintButton ? <button type="button" onClick={handleHint}>Hint</button> : ""}
               {showHint.show ? <p>{showHint.hint}</p> : ""}
-            {/* </div> */}
-            {/* <div className="question-input"> */}
+            
               <input
                 type="text"
                 value={submittedAnswer}
                 onChange={(event) => setSubmittedAnswer(event.target.value)}
               />
-            {/* </div> */}
+           
             <div className="question-input-2"> 
               <button type="button" onClick={handleAnswer}>Check answer</button>
               <button type="button" onClick={handleSkip}>Skip Question</button>
             </div> 
           </>
-        ) : (
+        ) : ( error ? (<p>Error! Please refresh the page</p>) :
           <p>Loading</p>
         )}
          <div className={result === 0 ? "answer-result-hide" : result === 1 ? "answer-result-correct" : "answer-result-wrong"}>
           {result === 1 ? (<><img src={wellDone} alt="Correct" /><h1>Correct</h1></>) : (<><img src={wrong} alt="Wrong" /><p>Not quite right!</p></>)}
         </div>
+
+        <div className={showInfo ? "show-info" : "hide-info"}>
+          <h1>DoseMaster: A tool for Student Nurses</h1>
+          <p>DoseMaster is designed to help student nurses practice medication calculation mathematics. 
+            Using OpenAI's technology, DoseMaster generates questions and answers to simulate real-world scenarios. While the medications and dosages aim to reflect real-world practices, inaccuracies may occur due to the nature of AI-generated content.
+            The information provided should not be used for actual medical decision-making.
+            Good luck with your nursing career, and stay safe!</p>
+          <button type='button' onClick={()=> setShowInfo(false)} >Close</button>
+        </div>
+
+        <div className={ error ? "show-error-msg" : "hidden-error-msg"}>
+          <h1>Error</h1>
+          <p>Sorry! Unfortunately we are experiencing a server error.
+            Please refresh the page. 
+          </p>
+        </div>
       </div>
-     
     </div>
     </>
   );
