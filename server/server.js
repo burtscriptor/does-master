@@ -53,11 +53,16 @@ app.get("/api/openai", async (request, response) => {
         });
 
         const { choices } = openaiResponse.data;
-        const cleanedData = JSON.parse(removeChars(choices[0].message.content));
-        response.json(cleanedData);
-        console.log('dirty', choices[0].message.content)
-        console.log(cleanedData)
+        try {
+          const cleanedData = JSON.parse(removeChars(choices[0].message.content));
+          response.json(cleanedData);
+        } catch (parseError) {
+           console.error('Error parsing JSON', parseError);
+           response.status(500).json( { error: 'Failed to parse JSON from openAi'})
+        }
+
     } catch (error) {
+      
         console.error('Error fetching data from OpenAI:', error);
         response.status(500).json({ error: 'Failed to fetch data from OpenAI' });
     }

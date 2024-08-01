@@ -12,3 +12,4 @@ const removeChars = (data) => {
 module.exports = {
     removeChars
 }
+// probaly need to request again if type od data not a string
