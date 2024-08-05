@@ -19,17 +19,20 @@ const GetQuestion = () => {
   const [loading, setLoading] = useState(false);
 
   const handleRequest = useCallback(async () => {
+    console.log('start handlerequest FE');
     try {
+      
     const response = await axios.get("/api/openai");
-    setContent(prev => ({
-      questions: [...prev.questions, ...response.data.questions],
-      answers: [...prev.answers, ...response.data.answers],
-      working: [...prev.working, ...response.data.working],
+    console.log('FE response', response);
+    // setContent(prev => ({
+    //   questions: [...prev.questions, ...response.data.questions],
+    //   answers: [...prev.answers, ...response.data.answers],
+    //   working: [...prev.working, ...response.data.working],
     
-    }));
+    // }));
     setError(false);
   } catch (error) {
-  console.log(error);
+  console.log('handlereuqest FE error', error);
   if(index >= content.questions.length) {
     setError(true);
   } 
