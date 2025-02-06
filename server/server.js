@@ -10,8 +10,6 @@ app.use(cors());
 
 const apiKey = process.env.OPENAI_API_KEY;
 
-// app.use(express.static(path.join(__dirname + "/public")));
-
 
 app.get("/api", (request, response) => {
     response.json({ 'hello': 'hey whats up?' });
