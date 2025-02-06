@@ -1,0 +1,20 @@
+{
+  "files": {
+    "main.css": "/static/css/main.456f408d.css",
+    "main.js": "/static/js/main.3b4ebe80.js",
+    "static/js/453.074df6f7.chunk.js": "/static/js/453.074df6f7.chunk.js",
+    "static/media/background.jpg": "/static/media/background.4e272d61357fba66e19e.jpg",
+    "static/media/vomit.png": "/static/media/vomit.1aa10771a12867c5acc9.png",
+    "static/media/healthcare.png": "/static/media/healthcare.106172eb1d57cfd2a396.png",
+    "static/media/better-health.png": "/static/media/better-health.cf574f12bfb1100316e2.png",
+    "static/media/information.png": "/static/media/information.8aba4ac37a6e2488699b.png",
+    "index.html": "/index.html",
+    "main.456f408d.css.map": "/static/css/main.456f408d.css.map",
+    "main.3b4ebe80.js.map": "/static/js/main.3b4ebe80.js.map",
+    "453.074df6f7.chunk.js.map": "/static/js/453.074df6f7.chunk.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.456f408d.css",
+    "static/js/main.3b4ebe80.js"
+  ]
+}

@@ -1,13 +1,16 @@
 const express = require('express');
+const cors = require('cors');
 const axios = require('axios');
+const path = require('path');
 require('dotenv').config();
 const { removeChars } = require('./removeChars');
 
 const app = express();
+app.use(cors());
 
-const apiKey = process.env.REACT_APP_API_KEY;
+const apiKey = process.env.OPENAI_API_KEY;
 
-app.use(express.static(path.join(__dirname + "/public")));
+// app.use(express.static(path.join(__dirname + "/public")));
 
 
 app.get("/api", (request, response) => {
@@ -15,7 +18,8 @@ app.get("/api", (request, response) => {
 });
 
 app.get("/api/openai", async (request, response) => {
-    const prompt = `A nursing student is practicing medication calculations, 
+ 
+  const prompt = `A nursing student is practicing medication calculations, 
     generate 5 questions with answers for them to practice. 
     The questions may include common IV infusions and medications including antibiotics, as well as common oral medications, may also use a weight (kg not lbs) based formula. 
     Please return the questions, answers (only the dosage and units of measurement), and formula to work out the answer for example (500 mg * 5 mL) / 250 mg = 10 mL, in the following format:
@@ -45,7 +49,7 @@ app.get("/api/openai", async (request, response) => {
 
     const dataPayload = {
         "model": "gpt-3.5-turbo",
-        "messages": [{ "role": "user", "content": `${prompt}` }],
+        "messages": [{ "role": "user", "content": prompt }],
         "temperature": 0.7,
         "n": 1
     };
@@ -65,10 +69,9 @@ app.get("/api/openai", async (request, response) => {
         }
 
     } catch (error) {
-      
         console.error('Error fetching data from OpenAI:', error);
         response.status(500).json({ error: 'Failed to fetch data from OpenAI' });
-    }
+    };
 });
 
 const PORT = process.env.PORT || 5000;
@@ -77,4 +80,3 @@ app.listen(PORT, () => {
 });
 
 
-// implemented working out in request and response

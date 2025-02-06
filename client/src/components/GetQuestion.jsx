@@ -6,6 +6,8 @@ import wellDone from '../assets/better-health.png';
 import health from '../assets/healthcare.png';
 import info from '../assets/information.png';
 
+const Backend_URL = process.env.REACT_APP_BACKEND_URL;
+
 const GetQuestion = () => {
   const [content, setContent] = useState({ questions: [], answers: [], working: [] });
   const [submittedAnswer, setSubmittedAnswer] = useState("");
@@ -18,25 +20,32 @@ const GetQuestion = () => {
   const [error, setError] = useState(false);
   const [loading, setLoading] = useState(false);
 
+  
+
+
   const handleRequest = useCallback(async () => {
-    console.log('start handlerequest FE');
+    setLoading(true);
     try {
       
-    const response = await axios.get("/api/openai");
-    console.log('FE response', response);
-    // setContent(prev => ({
-    //   questions: [...prev.questions, ...response.data.questions],
-    //   answers: [...prev.answers, ...response.data.answers],
-    //   working: [...prev.working, ...response.data.working],
+    // const response = await axios.get("/api/openai");
+      const response = await axios.get(Backend_URL);
+      
+  
+    setContent(prev => ({
+      questions: [...prev.questions, ...response.data.questions],
+      answers: [...prev.answers, ...response.data.answers],
+      working: [...prev.working, ...response.data.working],
     
-    // }));
+    }));
+    setLoading(false);
     setError(false);
   } catch (error) {
-  console.log('handlereuqest FE error', error);
   if(index >= content.questions.length) {
+    console.log(Backend_URL);
+    console.log('error')
     setError(true);
-  } 
-  }
+  } ;
+  };
   }, []);
 
   useEffect(() => {
@@ -59,7 +68,8 @@ const GetQuestion = () => {
     }
   }, [result]);
 
-  const normalizeString = str => str.toLowerCase().replace(/[^a-z0-9]/g, "").trim();
+  const normalizeString = str => str.toLowerCase().replace(/[^a-z0-9]/g, "").trim().replace("hr", 'hours');
+
 
   const handleAnswer = useCallback(() => {
     if (submittedAnswer.length > 0) {
@@ -74,6 +84,7 @@ const GetQuestion = () => {
         setResult(1);
         setCounters(prev => ({ ...prev, correct: [...prev.correct, index] }));
         setShowHint({ show: false, hint: "" });
+        setShowHintButton(false);
         setSubmittedAnswer("");
         handleNext();
       } else {
@@ -87,26 +98,21 @@ const GetQuestion = () => {
   }, [submittedAnswer, content.answers, index, showHint.show]);
 
   const handleNext = useCallback(() => {
-    if(index === content.questions.length) {
-      console.log('condition 1')
-      console.log(index, content.questions.length)
-    }
     if (index === content.questions.length - 2) {
       handleRequest();
-      console.log('condition 2')
-      console.log(content.questions.length)
     } else {
       setIndex(prevIndex => prevIndex + 1);
-      console.log('condition 3')
-      console.log(content.questions.length)
     }
   }, [index, content.questions.length, handleRequest]);
 
   const handleSkip = useCallback(() => {
-    handleNext();
-    setCounters(prev => ({ ...prev, skipped: prev.skipped + 1 }));
-    setShowHintButton(false);
-    setShowHint({ show: false, hint: "" });
+
+      handleNext();
+      setCounters(prev => ({ ...prev, skipped: prev.skipped + 1 }));
+      setShowHintButton(false);
+      setShowHint({ show: false, hint: "" });
+      setSubmittedAnswer("");
+   
   }, [handleNext]);
 
   const handleHint = () => {
@@ -119,7 +125,8 @@ const GetQuestion = () => {
         setShowHint({ show: true, hint: newHint });
         setShowHintButton(false);
       } else {
-        setShowHint({ show: true, hint: "No hint available" });
+        const defaultHint = content.working[index];
+        setShowHint({ show: true, hint: defaultHint });
       }
     } else {
       setShowHint({ show: true, hint: "No hint available" });
@@ -127,22 +134,17 @@ const GetQuestion = () => {
   };
 
 const handleHelp = () => {
-  console.log(content.answers[index]);
   setShowInfo(true);
-  
-}
+};
 
   return (
     <>
     <div className="header">
     <h1>DoseMaster</h1>
     </div>
-    <div className="parent">
 
-      <div className="icon-parent" >
-     
-      </div>
-      
+    <div className="parent">
+      <div></div>
       <div className="dashboard-parent">
         
         <div className="dashboard-child">
@@ -156,8 +158,9 @@ const handleHelp = () => {
         </div>
         <img className="info-icon" src={info} onClick={handleHelp}/>
       </div>
+      
       <div className="question">
-        {content.questions.length > 0 ? (
+        {content.questions.length > 0 ? !loading ? (
           <>
           
               <p>{content.questions[index]}</p>
@@ -172,15 +175,22 @@ const handleHelp = () => {
               />
            
             <div className="question-input-2"> 
-              <button type="button" onClick={handleAnswer}>Check answer</button>
-              <button type="button" onClick={handleSkip}>Skip Question</button>
+              <button type="button" className={ !submittedAnswer.length > 0 ? "disabled" : "" } onClick={handleAnswer}>Check answer</button>
+              <button type="button" className={ loading ? "disabled" : "" } onClick={handleSkip}>Skip Question</button>
             </div> 
+        
           </>
-        ) : ( error ? (<p>Error! Please refresh the page</p>) :
+        ) : ( error ? (  <div className={ error ? "show-error-msg" : "hidden-error-msg"}>
+          <h1>Error</h1>
+          <p>Sorry! Unfortunately we are experiencing a server error.
+            Please refresh the page. 
+          </p>
+        </div>) :
           <p>Loading</p>
-        )}
+        ):  
+        <p>Error loading please refresh the page</p>}
          <div className={result === 0 ? "answer-result-hide" : result === 1 ? "answer-result-correct" : "answer-result-wrong"}>
-          {result === 1 ? (<><img src={wellDone} alt="Correct" /><h1>Correct</h1></>) : (<><img src={wrong} alt="Wrong" /><p>Not quite right!</p></>)}
+          {result === 1 ? (<><p>Correct!</p><img src={wellDone} alt="Correct" /></>) : (<><p>Not quite right!</p><img src={wrong} alt="Wrong" /></>)}
         </div>
 
         <div className={showInfo ? "show-info" : "hide-info"}>
@@ -192,12 +202,7 @@ const handleHelp = () => {
           <button type='button' onClick={()=> setShowInfo(false)} >Close</button>
         </div>
 
-        <div className={ error ? "show-error-msg" : "hidden-error-msg"}>
-          <h1>Error</h1>
-          <p>Sorry! Unfortunately we are experiencing a server error.
-            Please refresh the page. 
-          </p>
-        </div>
+      
       </div>
     </div>
     </>
