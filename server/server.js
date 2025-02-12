@@ -12,11 +12,11 @@ const apiKey = process.env.OPENAI_API_KEY;
 
 
 app.get("/api", (request, response) => {
-    response.json({ 'hello': 'hey whats up?' });
+  response.json({ 'hello': 'hey whats up?' });
 });
 
 app.get("/api/openai", async (request, response) => {
- 
+
   const prompt = `A nursing student is practicing medication calculations, 
     generate 5 questions with answers for them to practice. 
     The questions may include common IV infusions and medications including antibiotics, as well as common oral medications, may also use a weight (kg not lbs) based formula. 
@@ -45,41 +45,41 @@ app.get("/api/openai", async (request, response) => {
       ],
     }`;
 
-    const dataPayload = {
-        "model": "gpt-3.5-turbo",
-        "messages": [{ "role": "user", "content": prompt }],
-        "temperature": 0.7,
-        "n": 1
-    };
+  const dataPayload = {
+    "model": "gpt-3.5-turbo",
+    "messages": [{ "role": "user", "content": prompt }],
+    "temperature": 0.7,
+    "n": 1
+  };
+
+  try {
+    const openaiResponse = await axios.post('https://api.openai.com/v1/chat/completions', dataPayload, {
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}` }
+    });
+
+    const { choices } = openaiResponse.data;
+
+    if (!choices || choices.length === 0 || !choices[0].message) {
+      return response.status(500).json({ error: "Invalid response from OpenAI" });
+    }
 
     try {
-        const openaiResponse = await axios.post('https://api.openai.com/v1/chat/completions', dataPayload, {
-            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}` }
-        });
+      const cleanedData = JSON.parse(removeChars(choices[0].message.content));
+      response.json(cleanedData);
+    } catch (parseError) {
+      console.error('Error parsing JSON', parseError);
+      response.status(500).json({ error: 'Failed to parse JSON from openAi' })
+    }
 
-        const { choices } = openaiResponse.data;
-
-        if (!choices || choices.length === 0 || !choices[0].message) {
-          return response.status(500).json({ error: "Invalid response from OpenAI" });
-      }
-      console.log(choices[0].message);
-        try {
-          const cleanedData = JSON.parse(removeChars(choices[0].message.content));
-          response.json(cleanedData);
-        } catch (parseError) {
-           console.error('Error parsing JSON', parseError);
-           response.status(500).json( { error: 'Failed to parse JSON from openAi'})
-        }
-
-    } catch (error) {
-        console.error('Error fetching data from OpenAI:', error);
-        response.status(500).json({ error: 'Failed to fetch data from OpenAI' });
-    };
+  } catch (error) {
+    console.error('Error fetching data from OpenAI:', error);
+    response.status(500).json({ error: 'Failed to fetch data from OpenAI' });
+  };
 });
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
-    console.log(`Listening on ${PORT}`);
+  console.log(`Listening on ${PORT}`);
 });
 
 
