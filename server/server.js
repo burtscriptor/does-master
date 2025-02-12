@@ -3,7 +3,7 @@ const cors = require('cors');
 const axios = require('axios');
 const path = require('path');
 require('dotenv').config();
-const { removeChars } = require('./removeChars');
+const { removeChars } = require("./removeChars");
 
 const app = express();
 app.use(cors());
@@ -58,6 +58,11 @@ app.get("/api/openai", async (request, response) => {
         });
 
         const { choices } = openaiResponse.data;
+
+        if (!choices || choices.length === 0 || !choices[0].message) {
+          return response.status(500).json({ error: "Invalid response from OpenAI" });
+      }
+      console.log(choices[0].message);
         try {
           const cleanedData = JSON.parse(removeChars(choices[0].message.content));
           response.json(cleanedData);
