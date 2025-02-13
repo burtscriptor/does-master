@@ -18,16 +18,11 @@ const GetQuestion = () => {
   const [counters, setCounters] = useState({ attempted: 0, skipped: 0, correct: [] });
   const [showInfo, setShowInfo] = useState(false);
   const [error, setError] = useState(false);
-  const [loading, setLoading] = useState(false);
-
-  
+  const [loading, setLoading] = useState(true);
 
 
   const handleRequest = useCallback(async () => {
-    setLoading(true);
     try {
-      
-    // const response = await axios.get("/api/openai");
       const response = await axios.get(Backend_URL);
       
   
@@ -41,8 +36,6 @@ const GetQuestion = () => {
     setError(false);
   } catch (error) {
   if(index >= content.questions.length) {
-    console.log(Backend_URL);
-    console.log('error')
     setError(true);
   } ;
   };
@@ -69,7 +62,6 @@ const GetQuestion = () => {
   }, [result]);
 
   const normalizeString = str => str.toLowerCase().replace(/[^a-z0-9]/g, "").trim().replace("hr", 'hours');
-
 
   const handleAnswer = useCallback(() => {
     if (submittedAnswer.length > 0) {
