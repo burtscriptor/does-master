@@ -74,7 +74,7 @@ app.get("/api/openai", async (request, response) => {
 
   } catch (error) {
     console.error('Error fetching data from OpenAI:', error);
-    response.status(500).json({ error: 'Failed to fetch data from OpenAI' });
+    response.status(500).json({ error: 'Failed to fetch data from OpenAI', message: error });
   };
 });
 
